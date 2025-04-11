@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 10px;
+      }
+      input, button {
+        width: 100%;
+        margin: 8px 0;
+        padding: 6px;
+        box-sizing: border-box;
+      }
+      input[disabled] {
+        background-color: #f0f0f0;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Stores Issue</h3>
+
+    <label>Date:</label>
+    <input type="date" id="issueDate">
+
+    <label>Route Card Number:</label>
+    <input type="text" id="routeCard">
+
+    <label>FG Item Code:</label>
+    <input type="text" id="fgCode" onblur="fetchItemName()">
+
+    <label>FG Item Name:</label>
+    <input type="text" id="fgName" disabled>
+
+    <label>Planned Quantity:</label>
+    <input type="number" id="plannedQty">
+
+    <button onclick="generate()">Generate BOM List</button>
+    <hr>
+    <button onclick="confirm()">Confirm Issue</button>
+
+    <script>
+      function fetchItemName() {
+        const fgCode = document.getElementById("fgCode").value.trim();
+        if (!fgCode) return;
+        google.script.run.withSuccessHandler(function(name) {
+          document.getElementById("fgName").value = name || "Not Found";
+        }).getItemName(fgCode);
+      }
+
+      function generate() {
+        const fgCode = document.getElementById("fgCode").value.trim();
+        const plannedQty = parseFloat(document.getElementById("plannedQty").value);
+
+        if (!fgCode || isNaN(plannedQty)) {
+          alert("Please enter valid FG Code and Planned Quantity.");
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(() => alert("BOM list generated."))
+          .withFailureHandler(err => alert(err.message))
+          .generateBOM(fgCode, plannedQty);
+      }
+
+      function confirm() {
+        const date = document.getElementById("issueDate").value;
+        const routeCard = document.getElementById("routeCard").value.trim();
+
+        if (!date || !routeCard) {
+          alert("Please enter both Date and Route Card Number.");
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(() => alert("Issue confirmed."))
+          .withFailureHandler(err => alert(err.message))
+          .confirmIssue(date, routeCard);
+      }
+    </script>

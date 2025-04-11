@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      body { font-family: Arial; padding: 10px; }
+      input, select, button { width: 100%; margin: 8px 0; padding: 6px; }
+    </style>
+  </head>
+  <body>
+    <h3>FG Consumption Log</h3>
+
+    <label>Date:</label>
+    <input type="date" id="consumedDate" required>
+
+    <label>Route Card Number:</label>
+    <input type="text" id="routeCard" required>
+
+    <label>FG Item Code:</label>
+    <input type="text" id="fgCode" onblur="fetchItemName()" required>
+
+    <label>FG Item Name:</label>
+    <input type="text" id="fgName" disabled>
+
+    <label>Produced FG Qty:</label>
+    <input type="number" id="fgQty" required>
+
+    <button onclick="submitFGConsumption()">Submit FG Consumption</button>
+
+    <script>
+      function fetchItemName() {
+        const code = document.getElementById("fgCode").value;
+        google.script.run.withSuccessHandler(name => {
+          document.getElementById("fgName").value = name || "Not Found";
+        }).getItemName(code);
+      }
+
+      function submitFGConsumption() {
+        const data = {
+          date: document.getElementById("consumedDate").value,
+          routeCard: document.getElementById("routeCard").value,
+          fgCode: document.getElementById("fgCode").value,
+          fgQty: document.getElementById("fgQty").value
+        };
+
+        if (!data.date || !data.routeCard || !data.fgCode || !data.fgQty) {
+          alert("All fields are required.");
+          return;
+        }
+
+        google.script.run.withSuccessHandler(() => {
+          alert("FG Consumption logged successfully.");
+          document.getElementById("consumedDate").value = "";
+          document.getElementById("routeCard").value = "";
+          document.getElementById("fgCode").value = "";
+          document.getElementById("fgName").value = "";
+          document.getElementById("fgQty").value = "";
+        }).submitFGConsumption(data);
+      }
+    </script>
+  </body>
+</html>
